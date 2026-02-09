@@ -46,8 +46,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - "8080:8080"
-    mem_limit: 320m
-    memswap_limit: 512m
+    mem_limit: 400m
+    memswap_limit: 576m
     depends_on:
       mysql:
         condition: service_healthy

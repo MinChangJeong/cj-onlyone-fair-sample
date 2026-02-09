@@ -76,8 +76,8 @@ jib {
     container {
         ports = listOf("8080")
         jvmFlags = listOf(
-            "-Xmx192m",
-            "-Xms128m",
+            "-Xmx256m",
+            "-Xms192m",
             "-XX:+UseSerialGC",
             "-XX:MaxMetaspaceSize=96m",
             "-Xss256k",
