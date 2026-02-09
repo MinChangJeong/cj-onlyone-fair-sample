@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  jwt-secret: test-secret-key
+  cors-origins: http://localhost:3000
+
+crowd:
+  thresholds:
+    medium: 10
+    high: 25
+  window-minutes: 30
+  broadcast-interval-seconds: 99999

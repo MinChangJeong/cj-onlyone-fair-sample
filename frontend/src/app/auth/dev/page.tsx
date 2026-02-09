@@ -39,13 +39,13 @@ export default function DevLoginPage() {
   const setSession = useAuthStore((s) => s.setSession);
   const [selected, setSelected] = useState<number | null>(null);
 
-  if (process.env.NODE_ENV === "production") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">이 페이지는 개발 환경에서만 사용할 수 있습니다.</p>
-      </div>
-    );
-  }
+  // if (process.env.NODE_ENV === "production") {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <p className="text-muted-foreground">이 페이지는 개발 환경에서만 사용할 수 있습니다.</p>
+  //     </div>
+  //   );
+  // }
 
   const handleLogin = (index: number) => {
     const profile = DEV_PROFILES[index];

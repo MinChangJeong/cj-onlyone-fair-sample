@@ -1,5 +1,6 @@
 package com.cj.onlyonefair.infrastructure.config
 
+import com.cj.onlyonefair.domain.model.Participant
 import com.cj.onlyonefair.domain.model.ParticipantRole
 import com.cj.onlyonefair.domain.repository.ParticipantRepository
 import jakarta.servlet.FilterChain
@@ -23,36 +24,51 @@ class SessionTokenAuthFilter(
     ) {
         val authHeader = request.getHeader("Authorization")
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        val participant: Participant? = if (authHeader != null && authHeader.startsWith("Bearer ")) {
             val token = authHeader.substring(7)
-            val participant = participantRepository.findBySessionToken(token)
+            participantRepository.findBySessionToken(token)
+        } else {
+            // TODO: 개발 완료 후 제거 — 토큰 없으면 dev 참가자 자동 사용
+            getOrCreateDevParticipant()
+        }
 
-            if (participant != null) {
-                val authorities = when (participant.role) {
-                    ParticipantRole.PARTICIPANT -> listOf(
-                        SimpleGrantedAuthority("ROLE_PARTICIPANT")
-                    )
-                    ParticipantRole.BOOTH_OPERATOR -> listOf(
-                        SimpleGrantedAuthority("ROLE_BOOTH_OPERATOR"),
-                        SimpleGrantedAuthority("ROLE_PARTICIPANT")
-                    )
-                    ParticipantRole.ADMIN -> listOf(
-                        SimpleGrantedAuthority("ROLE_ADMIN"),
-                        SimpleGrantedAuthority("ROLE_BOOTH_OPERATOR"),
-                        SimpleGrantedAuthority("ROLE_PARTICIPANT")
-                    )
-                }
-
-                val authentication = UsernamePasswordAuthenticationToken(
-                    participant,
-                    null,
-                    authorities
+        if (participant != null) {
+            val authorities = when (participant.role) {
+                ParticipantRole.PARTICIPANT -> listOf(
+                    SimpleGrantedAuthority("ROLE_PARTICIPANT")
                 )
-
-                SecurityContextHolder.getContext().authentication = authentication
+                ParticipantRole.BOOTH_OPERATOR -> listOf(
+                    SimpleGrantedAuthority("ROLE_BOOTH_OPERATOR"),
+                    SimpleGrantedAuthority("ROLE_PARTICIPANT")
+                )
+                ParticipantRole.ADMIN -> listOf(
+                    SimpleGrantedAuthority("ROLE_ADMIN"),
+                    SimpleGrantedAuthority("ROLE_BOOTH_OPERATOR"),
+                    SimpleGrantedAuthority("ROLE_PARTICIPANT")
+                )
             }
+
+            val authentication = UsernamePasswordAuthenticationToken(
+                participant,
+                null,
+                authorities
+            )
+
+            SecurityContextHolder.getContext().authentication = authentication
         }
 
         filterChain.doFilter(request, response)
+    }
+
+    private fun getOrCreateDevParticipant(): Participant {
+        return participantRepository.findBySessionToken("dev-participant")
+            ?: participantRepository.save(
+                Participant(
+                    sessionToken = "dev-participant",
+                    displayName = "Dev Admin",
+                    role = ParticipantRole.ADMIN,
+                    onboardingDone = true
+                )
+            )
     }
 }

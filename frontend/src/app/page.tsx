@@ -17,10 +17,12 @@ export default function Home() {
   useEffect(() => {
     if (!mounted) return;
 
-    if (!sessionToken) {
-      router.replace("/auth/qr");
-      return;
-    }
+    console.log("Session Token:", sessionToken);
+
+    // if (!sessionToken) {
+    //   router.replace("/auth/qr");
+    //   return;
+    // }
 
     if (participant && !participant.onboardingDone) {
       router.replace("/onboarding");

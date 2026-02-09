@@ -27,16 +27,9 @@ class SecurityConfig(
             .csrf { it.disable() }
             .cors { it.configurationSource(corsConfigurationSource()) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            // TODO: 개발 완료 후 인증/인가 규칙 복원
             .authorizeHttpRequests { auth ->
-                auth
-                    .requestMatchers("/api/v1/auth/**").permitAll()
-                    .requestMatchers("/ws/**").permitAll()
-                    .requestMatchers("/actuator/health").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/keywords").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/v1/keywords/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/v1/keywords/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/v1/booths").hasAnyRole("BOOTH_OPERATOR", "ADMIN")
-                    .anyRequest().authenticated()
+                auth.anyRequest().permitAll()
             }
             .addFilterBefore(sessionTokenAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
