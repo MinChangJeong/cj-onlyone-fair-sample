@@ -45,11 +45,21 @@ dependencies {
 }
 
 kotlin {
+    jvmToolchain(21)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+// bootJar 시 devtools 등 불필요한 리소스 제외
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
