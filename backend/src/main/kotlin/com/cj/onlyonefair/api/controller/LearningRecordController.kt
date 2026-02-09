@@ -27,7 +27,7 @@ class LearningRecordController(
     @PostMapping
     fun createRecord(
         @Valid @RequestBody request: CreateLearningRecordRequest,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<LearningRecordResponse>> {
         val participant = getCurrentParticipant(authentication)
         val response = learningRecordService.create(request, participant)
@@ -38,7 +38,7 @@ class LearningRecordController(
     fun updateRecord(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateLearningRecordRequest,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<LearningRecordResponse>> {
         val participant = getCurrentParticipant(authentication)
         val response = learningRecordService.update(id, request, participant)
@@ -48,7 +48,7 @@ class LearningRecordController(
     @DeleteMapping("/{id}")
     fun deleteRecord(
         @PathVariable id: Long,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<Unit>> {
         val participant = getCurrentParticipant(authentication)
         learningRecordService.delete(id, participant)
@@ -57,7 +57,7 @@ class LearningRecordController(
 
     @GetMapping("/my")
     fun getMyRecords(
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<List<LearningRecordResponse>>> {
         val participant = getCurrentParticipant(authentication)
         val records = learningRecordService.getMyRecords(participant.id)
@@ -67,14 +67,16 @@ class LearningRecordController(
     @GetMapping("/{id}")
     fun getRecord(
         @PathVariable id: Long,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<LearningRecordResponse>> {
         val participant = getCurrentParticipant(authentication)
         val record = learningRecordService.getById(id, participant.id)
         return ResponseEntity.ok(ApiResponse.ok(record))
     }
 
-    private fun getCurrentParticipant(authentication: Authentication): Participant {
-        return authentication.principal as Participant
+    private fun getCurrentParticipant(authentication: Authentication?): Participant {
+        val principal = authentication?.principal
+            ?: throw IllegalStateException("인증 정보가 없습니다")
+        return principal as Participant
     }
 }

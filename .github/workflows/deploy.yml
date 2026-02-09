@@ -1,0 +1,40 @@
+name: Deploy to Amazon Linux 2023
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync files to EC2
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude 'build' \
+            --exclude '.gradle' \
+            --exclude '.env' \
+            ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app/
+
+      - name: Deploy on EC2
+        run: |
+          ssh ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ec2-user/app
+            docker compose down
+            docker compose up -d --build
+          EOF

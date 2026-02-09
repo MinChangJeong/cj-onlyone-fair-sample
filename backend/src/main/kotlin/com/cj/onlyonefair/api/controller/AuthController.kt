@@ -31,7 +31,7 @@ class AuthController(
 
     @PostMapping("/onboarding-complete")
     fun completeOnboarding(
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<Unit>> {
         val participant = getCurrentParticipant(authentication)
         authService.completeOnboarding(participant.id)
@@ -40,7 +40,7 @@ class AuthController(
 
     @GetMapping("/me")
     fun getCurrentUser(
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<ParticipantResponse>> {
         val participant = getCurrentParticipant(authentication)
         val response = ParticipantResponse(
@@ -52,7 +52,9 @@ class AuthController(
         return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
-    private fun getCurrentParticipant(authentication: Authentication): Participant {
-        return authentication.principal as Participant
+    private fun getCurrentParticipant(authentication: Authentication?): Participant {
+        val principal = authentication?.principal
+            ?: throw IllegalStateException("인증 정보가 없습니다")
+        return principal as Participant
     }
 }

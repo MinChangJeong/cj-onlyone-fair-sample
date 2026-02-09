@@ -24,11 +24,11 @@ class SessionTokenAuthFilter(
     ) {
         val authHeader = request.getHeader("Authorization")
 
+        // TODO: 개발 완료 후 dev fallback 제거
         val participant: Participant? = if (authHeader != null && authHeader.startsWith("Bearer ")) {
             val token = authHeader.substring(7)
-            participantRepository.findBySessionToken(token)
+            participantRepository.findBySessionToken(token) ?: getOrCreateDevParticipant()
         } else {
-            // TODO: 개발 완료 후 제거 — 토큰 없으면 dev 참가자 자동 사용
             getOrCreateDevParticipant()
         }
 

@@ -22,14 +22,16 @@ class ResonanceController(
     @PostMapping
     fun toggleResonance(
         @Valid @RequestBody request: ToggleResonanceRequest,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<ResonanceResponse>> {
         val participant = getCurrentParticipant(authentication)
         val response = resonanceService.toggle(request, participant)
         return ResponseEntity.ok(ApiResponse.ok(response))
     }
 
-    private fun getCurrentParticipant(authentication: Authentication): Participant {
-        return authentication.principal as Participant
+    private fun getCurrentParticipant(authentication: Authentication?): Participant {
+        val principal = authentication?.principal
+            ?: throw IllegalStateException("인증 정보가 없습니다")
+        return principal as Participant
     }
 }

@@ -39,6 +39,14 @@ class GlobalExceptionHandler {
             .body(ApiResponse.error(ex.message ?: "Invalid request"))
     }
 
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleIllegalState(ex: IllegalStateException): ResponseEntity<ApiResponse<Nothing>> {
+        log.warn("Conflict / bad state: {}", ex.message)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(ex.message ?: "Invalid state"))
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<ApiResponse<Nothing>> {
         val errors = ex.bindingResult.fieldErrors.joinToString(", ") {

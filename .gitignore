@@ -32,9 +32,6 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 
-# Gradle
-backend/gradle/wrapper/gradle-wrapper.jar
-
 # Logs
 *.log
 logs/

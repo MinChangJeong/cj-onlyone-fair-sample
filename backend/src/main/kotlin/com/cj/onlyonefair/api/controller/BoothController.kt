@@ -44,7 +44,7 @@ class BoothController(
     @PostMapping
     fun createBooth(
         @Valid @RequestBody request: CreateBoothRequest,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<BoothDetailResponse>> {
         val participant = getCurrentParticipant(authentication)
         val booth = boothService.createBooth(request, participant)
@@ -55,7 +55,7 @@ class BoothController(
     fun updateBooth(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateBoothRequest,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<BoothDetailResponse>> {
         val participant = getCurrentParticipant(authentication)
         val booth = boothService.updateBooth(id, request, participant)
@@ -65,14 +65,16 @@ class BoothController(
     @GetMapping("/{id}/learning-records")
     fun getLearningRecordsForBooth(
         @PathVariable id: Long,
-        authentication: Authentication
+        authentication: Authentication?
     ): ResponseEntity<ApiResponse<List<LearningRecordResponse>>> {
         val participant = getCurrentParticipant(authentication)
         val records = learningRecordService.getByBooth(id, participant.id)
         return ResponseEntity.ok(ApiResponse.ok(records))
     }
 
-    private fun getCurrentParticipant(authentication: Authentication): Participant {
-        return authentication.principal as Participant
+    private fun getCurrentParticipant(authentication: Authentication?): Participant {
+        val principal = authentication?.principal
+            ?: throw IllegalStateException("인증 정보가 없습니다")
+        return principal as Participant
     }
 }
