@@ -5,10 +5,10 @@ spring:
     password: ${DB_PASSWORD:changeme}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 30
-      minimum-idle: 5
-      idle-timeout: 300000
-      connection-timeout: 20000
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 60000
+      connection-timeout: 10000
 
   jpa:
     hibernate:
@@ -33,8 +33,10 @@ spring:
 server:
   port: 8080
   tomcat:
-    max-threads: 200
-    accept-count: 100
+    threads:
+      max: 25
+      min-spare: 2
+    accept-count: 10
 
 app:
   jwt-secret: ${JWT_SECRET:dev-secret-key-change-in-production}

@@ -5,9 +5,14 @@ on:
     branches:
       - master
 
+env:
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+  SSH_OPTS: -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ConnectTimeout=15 -o ConnectionAttempts=3
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout source
@@ -18,23 +23,63 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Clean stale SSH sessions on EC2
+        run: |
+          ssh $SSH_OPTS ec2-user@$EC2_HOST \
+            "pkill -o -u ec2-user sshd 2>/dev/null || true" || true
 
       - name: Sync files to EC2
         run: |
           rsync -avz --delete \
+            -e "ssh $SSH_OPTS" \
             --exclude '.git' \
             --exclude 'node_modules' \
             --exclude '.next' \
             --exclude 'build' \
             --exclude '.gradle' \
             --exclude '.env' \
-            ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app/
+            ./ ec2-user@$EC2_HOST:/home/ec2-user/app/
 
-      - name: Deploy on EC2
+      - name: Setup swap file (1GB)
         run: |
-          ssh ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh $SSH_OPTS ec2-user@$EC2_HOST << 'EOF'
+            if [ ! -f /swapfile ]; then
+              sudo dd if=/dev/zero of=/swapfile bs=128M count=8
+              sudo chmod 600 /swapfile
+              sudo mkswap /swapfile
+              sudo swapon /swapfile
+              echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
+            fi
+            sudo swapon --show
+          EOF
+
+      - name: Build backend image with Jib
+        timeout-minutes: 15
+        run: |
+          ssh $SSH_OPTS ec2-user@$EC2_HOST << 'EOF'
+            cd /home/ec2-user/app/backend
+
+            # JDK 21이 없으면 설치
+            if ! java -version 2>&1 | grep -q "21"; then
+              echo "Installing JDK 21..."
+              sudo dnf install -y java-21-amazon-corretto-devel
+            fi
+
+            # Jib으로 Docker 이미지 빌드 (Docker daemon에 직접 저장)
+            chmod +x gradlew
+            ./gradlew jibDockerBuild -x test --no-daemon --no-configuration-cache 2>&1
+          EOF
+
+      - name: Build frontend and start services
+        timeout-minutes: 10
+        run: |
+          ssh $SSH_OPTS ec2-user@$EC2_HOST << 'EOF'
             cd /home/ec2-user/app
+            export DOCKER_BUILDKIT=1
+
             docker compose down
-            docker compose up -d --build
+            docker compose build --progress=plain frontend 2>&1
+            docker compose up -d
           EOF

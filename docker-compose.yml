@@ -11,7 +11,21 @@ services:
       - mysqldata:/var/lib/mysql
     ports:
       - "3306:3306"
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00
+    command: >-
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-time-zone=+00:00
+      --innodb-buffer-pool-size=64M
+      --innodb-log-buffer-size=4M
+      --innodb-flush-method=O_DIRECT
+      --max-connections=30
+      --table-open-cache=200
+      --performance-schema=OFF
+      --key-buffer-size=8M
+      --tmp-table-size=16M
+      --max-heap-table-size=16M
+    mem_limit: 256m
+    memswap_limit: 384m
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -19,9 +33,7 @@ services:
       retries: 5
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: onlyone-backend:latest
     container_name: onlyone-backend
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-dev}
@@ -34,6 +46,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     ports:
       - "8080:8080"
+    mem_limit: 320m
+    memswap_limit: 512m
     depends_on:
       mysql:
         condition: service_healthy
@@ -48,6 +62,8 @@ services:
     container_name: onlyone-frontend
     ports:
       - "3000:3000"
+    mem_limit: 128m
+    memswap_limit: 192m
     depends_on:
       - backend
 

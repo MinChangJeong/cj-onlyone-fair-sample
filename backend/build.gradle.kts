@@ -4,6 +4,7 @@ plugins {
     kotlin("plugin.jpa") version "1.9.22"
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
 group = "com.cj"
@@ -62,4 +63,26 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 // bootJar 시 devtools 등 불필요한 리소스 제외
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:21-jre-alpine"
+    }
+    to {
+        image = "onlyone-backend"
+        tags = setOf("latest")
+    }
+    container {
+        ports = listOf("8080")
+        jvmFlags = listOf(
+            "-Xmx192m",
+            "-Xms128m",
+            "-XX:+UseSerialGC",
+            "-XX:MaxMetaspaceSize=96m",
+            "-Xss256k",
+            "-XX:MaxDirectMemorySize=32m"
+        )
+        creationTime.set("USE_CURRENT_TIMESTAMP")
+    }
 }
