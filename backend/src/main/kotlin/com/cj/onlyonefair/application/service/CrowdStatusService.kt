@@ -14,6 +14,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 @Service
+@Transactional(readOnly = true)
 class CrowdStatusService(
     private val boothRepository: BoothRepository,
     private val checkInRepository: CheckInRepository,
@@ -23,7 +24,6 @@ class CrowdStatusService(
     @Value("\${crowd.window-minutes:30}") private val crowdWindowMinutes: Long
 ) {
 
-    @Transactional(readOnly = true)
     fun computeCurrentStatus(): CrowdStatusBroadcast {
         val since = Instant.now().minus(crowdWindowMinutes, ChronoUnit.MINUTES)
         val checkInCounts = checkInRepository.countByBoothSince(since)

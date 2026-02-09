@@ -18,7 +18,7 @@ class CrowdSnapshot(
     val headCount: Int = 0,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, columnDefinition = "varchar(10)")
     val level: CrowdLevel = CrowdLevel.LOW,
 
     @Column(name = "recorded_at", nullable = false, updatable = false)

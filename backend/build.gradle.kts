@@ -31,9 +31,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Database
-    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.mysql:mysql-connector-j")
     implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.flywaydb:flyway-mysql")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

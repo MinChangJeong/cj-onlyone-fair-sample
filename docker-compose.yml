@@ -1,19 +1,21 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
+  mysql:
+    image: mysql:8.0
     container_name: onlyone-db
     environment:
-      POSTGRES_DB: ${DB_NAME:-onlyonefair}
-      POSTGRES_USER: ${DB_USER:-onlyone}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_DATABASE: ${DB_NAME:-onlyonefair}
+      MYSQL_USER: ${DB_USER:-onlyone}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootchangeme}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mysqldata:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=+00:00
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-onlyone}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -25,8 +27,8 @@ services:
     container_name: onlyone-backend
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-dev}
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: mysql
+      DB_PORT: 3306
       DB_NAME: ${DB_NAME:-onlyonefair}
       DB_USER: ${DB_USER:-onlyone}
       DB_PASSWORD: ${DB_PASSWORD:-changeme}
@@ -35,7 +37,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
 
   frontend:
@@ -52,4 +54,4 @@ services:
       - backend
 
 volumes:
-  pgdata:
+  mysqldata:

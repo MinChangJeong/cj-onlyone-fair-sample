@@ -17,7 +17,7 @@ class Participant(
     var displayName: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, columnDefinition = "varchar(20)")
     var role: ParticipantRole = ParticipantRole.PARTICIPANT,
 
     @Column(name = "onboarding_done", nullable = false)

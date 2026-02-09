@@ -22,7 +22,7 @@ class Resonance(
     val participant: Participant,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, columnDefinition = "varchar(20)")
     val type: ResonanceType,
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -3,7 +3,6 @@ package com.cj.onlyonefair.application.service
 import com.cj.onlyonefair.application.dto.AuthResponse
 import com.cj.onlyonefair.domain.model.Participant
 import com.cj.onlyonefair.domain.model.ParticipantRole
-import com.cj.onlyonefair.domain.repository.BoothRepository
 import com.cj.onlyonefair.domain.repository.ParticipantRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,28 +12,20 @@ import java.util.UUID
 @Service
 @Transactional
 class AuthService(
-    private val participantRepository: ParticipantRepository,
-    private val boothRepository: BoothRepository
+    private val participantRepository: ParticipantRepository
 ) {
 
     fun createSessionFromQr(qrToken: String): AuthResponse {
-        val booth = boothRepository.findByQrToken(qrToken)
-            ?: throw IllegalArgumentException("Invalid QR token")
+        if (qrToken.isBlank()) {
+            throw IllegalArgumentException("QR token cannot be empty")
+        }
 
         val sessionToken = UUID.randomUUID().toString()
-
         val participant = Participant(
             sessionToken = sessionToken,
-            role = ParticipantRole.BOOTH_OPERATOR,
-            displayName = booth.name
+            role = ParticipantRole.PARTICIPANT
         )
         val saved = participantRepository.save(participant)
-
-        if (booth.operator == null) {
-            booth.operator = saved
-            booth.updatedAt = Instant.now()
-            boothRepository.save(booth)
-        }
 
         return AuthResponse(
             sessionToken = saved.sessionToken,

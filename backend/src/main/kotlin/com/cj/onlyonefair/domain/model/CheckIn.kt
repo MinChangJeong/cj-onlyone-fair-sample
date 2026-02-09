@@ -22,7 +22,7 @@ class CheckIn(
     val booth: Booth,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, columnDefinition = "varchar(10)")
     val method: CheckInMethod = CheckInMethod.QR,
 
     @Column(name = "checked_in_at", nullable = false, updatable = false)
