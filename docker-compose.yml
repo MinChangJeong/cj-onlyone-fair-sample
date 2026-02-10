@@ -6,8 +6,6 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    mem_limit: 32m
-    memswap_limit: 48m
     depends_on:
       - frontend
       - backend
@@ -37,8 +35,6 @@ services:
       --key-buffer-size=8M
       --tmp-table-size=16M
       --max-heap-table-size=16M
-    mem_limit: 256m
-    memswap_limit: 384m
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -59,8 +55,6 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     expose:
       - "8080"
-    mem_limit: 400m
-    memswap_limit: 576m
     depends_on:
       mysql:
         condition: service_healthy
@@ -72,8 +66,6 @@ services:
     container_name: onlyone-frontend
     expose:
       - "3000"
-    mem_limit: 128m
-    memswap_limit: 192m
     depends_on:
       - backend
 

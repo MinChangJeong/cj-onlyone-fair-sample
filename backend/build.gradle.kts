@@ -80,6 +80,7 @@ jib {
             "-Xms192m",
             "-XX:+UseSerialGC",
             "-XX:MaxMetaspaceSize=96m",
+            "-XX:ReservedCodeCacheSize=48m",
             "-Xss256k",
             "-XX:MaxDirectMemorySize=32m"
         )
